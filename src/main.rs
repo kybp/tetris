@@ -110,11 +110,8 @@ impl Cell {
     }
 }
 
-enum BlockShape { I, L, O, P, S, T, Z }
-
 struct Block {
     cells: [Cell; 4],
-    shape: BlockShape,
 }
 
 fn random_block(x: Scalar, y: Scalar) -> Block {
@@ -172,7 +169,6 @@ impl Block {
         let color = [0.4, 0.4, 0.4, 0.7];
 
         Block {
-            shape: BlockShape::I,
             cells: [
                 Cell::new(x, y + cells(0), color),
                 Cell::new(x, y + cells(1), color),
@@ -186,7 +182,6 @@ impl Block {
         let color = [0.6, 0.6, 0.1, 0.7];
 
         Block {
-            shape: BlockShape::L,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -200,7 +195,6 @@ impl Block {
         let color = [0.7, 0.0, 0.7, 0.7];
 
         Block {
-            shape: BlockShape::O,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -214,7 +208,6 @@ impl Block {
         let color = [0.4, 0.3, 0.0, 0.7];
 
         Block {
-            shape: BlockShape::P,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -228,7 +221,6 @@ impl Block {
         let color = [0.0, 0.0, 0.8, 0.7];
 
         Block {
-            shape: BlockShape::S,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
@@ -242,7 +234,6 @@ impl Block {
         let color = [0.6, 0.0, 0.0, 0.7];
 
         Block {
-            shape: BlockShape::T,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
@@ -256,7 +247,6 @@ impl Block {
         let color = [0.0, 0.7, 0.3, 0.7];
 
         Block {
-            shape: BlockShape::Z,
             cells: [
                 Cell::new(x + cells(1), y,            color),
                 Cell::new(x,            y + cells(1), color),
