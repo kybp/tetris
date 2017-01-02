@@ -23,9 +23,9 @@ fn main() {
         .build().unwrap();
     let mut gl = GlGraphics::new(opengl);
 
-    let i_block = Block::i(CELL_SIZE,       CELL_SIZE);
-    let o_block = Block::o(CELL_SIZE * 2.0, CELL_SIZE);
-    let s_block = Block::s(CELL_SIZE * 4.0, CELL_SIZE);
+    let i_block = Block::i(cells(1), cells(1));
+    let o_block = Block::o(cells(2), cells(1));
+    let s_block = Block::s(cells(4), cells(1));
 
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
@@ -48,6 +48,10 @@ struct Cell {
 }
 
 const CELL_SIZE: Scalar = 50.0;
+
+fn cells(n: u32) -> Scalar {
+    n as Scalar * CELL_SIZE
+}
 
 impl Cell {
     fn new(x: Scalar, y: Scalar, color: Color) -> Cell {
@@ -89,10 +93,10 @@ impl Block {
         Block {
             shape: BlockShape::I,
             cells: [
-                Cell::new(x, y + CELL_SIZE * 0.0, color),
-                Cell::new(x, y + CELL_SIZE * 1.0, color),
-                Cell::new(x, y + CELL_SIZE * 2.0, color),
-                Cell::new(x, y + CELL_SIZE * 3.0, color),
+                Cell::new(x, y + cells(0), color),
+                Cell::new(x, y + cells(1), color),
+                Cell::new(x, y + cells(2), color),
+                Cell::new(x, y + cells(3), color),
             ]
         }
     }
@@ -103,10 +107,10 @@ impl Block {
         Block {
             shape: BlockShape::O,
             cells: [
-                Cell::new(x, y, color),
-                Cell::new(x + CELL_SIZE, y,             color),
-                Cell::new(x,             y + CELL_SIZE, color),
-                Cell::new(x + CELL_SIZE, y + CELL_SIZE, color),
+                Cell::new(x,            y,            color),
+                Cell::new(x + cells(1), y,            color),
+                Cell::new(x,            y + cells(1), color),
+                Cell::new(x + cells(1), y + cells(1), color),
             ]
         }
     }
@@ -117,10 +121,10 @@ impl Block {
         Block {
             shape: BlockShape::S,
             cells: [
-                Cell::new(x,             y,                   color),
-                Cell::new(x,             y + CELL_SIZE,       color),
-                Cell::new(x + CELL_SIZE, y + CELL_SIZE,       color),
-                Cell::new(x + CELL_SIZE, y + CELL_SIZE * 2.0, color),
+                Cell::new(x,            y,            color),
+                Cell::new(x,            y + cells(1), color),
+                Cell::new(x + cells(1), y + cells(1),  color),
+                Cell::new(x + cells(1), y + cells(2), color),
             ]
         }
     }
