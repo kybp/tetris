@@ -43,19 +43,22 @@ struct Cell {
     rect: Rectangle,
 }
 
+const CELL_SIZE: Scalar = 50.0;
+
 impl Cell {
-    fn new(x: Scalar, y: Scalar, size: Scalar, color: Color) -> Cell {
+    fn new(x: Scalar, y: Scalar, color: Color) -> Cell {
+        let border_radius = 5.0;
         let mut border_color = color;
         border_color[3] -= 0.3;
 
         Cell {
-            x: x, y: y, size: size,
+            x: x, y: y, size: CELL_SIZE - border_radius * 2.0,
             rect: Rectangle {
                 color: color,
                 shape: Square,
                 border: Some(Border {
                     color: border_color,
-                    radius: 5.0,
+                    radius: border_radius,
                 })
             }
         }
@@ -77,10 +80,10 @@ impl Block {
         let cell_size = 50.0;
         Block {
             cells: [
-                Cell::new(x, y + cell_size * 0.0, cell_size, color),
-                Cell::new(x, y + cell_size * 1.0, cell_size, color),
-                Cell::new(x, y + cell_size * 2.0, cell_size, color),
-                Cell::new(x, y + cell_size * 3.0, cell_size, color),
+                Cell::new(x, y + CELL_SIZE * 0.0, color),
+                Cell::new(x, y + CELL_SIZE * 1.0, color),
+                Cell::new(x, y + CELL_SIZE * 2.0, color),
+                Cell::new(x, y + CELL_SIZE * 3.0, color),
             ]
         }
     }
