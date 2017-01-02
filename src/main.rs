@@ -55,7 +55,7 @@ struct Cell {
     rect: Rectangle,
 }
 
-const CELL_SIZE: Scalar = 50.0;
+const CELL_SIZE: Scalar = 30.0;
 
 fn cells(n: u32) -> Scalar {
     n as Scalar * CELL_SIZE
@@ -63,7 +63,7 @@ fn cells(n: u32) -> Scalar {
 
 impl Cell {
     fn new(x: Scalar, y: Scalar, color: Color) -> Cell {
-        let border_radius = 5.0;
+        let border_radius = CELL_SIZE / 10.0;
         let mut border_color = color;
         border_color[3] -= 0.3;
 
