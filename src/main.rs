@@ -24,6 +24,7 @@ fn main() {
     let mut gl = GlGraphics::new(opengl);
 
     let i_block = Block::i(cells(1), cells(1));
+    let l_block = Block::l(cells(2), cells(3));
     let o_block = Block::o(cells(2), cells(1));
     let s_block = Block::s(cells(4), cells(1));
     let t_block = Block::t(cells(4), cells(3));
@@ -35,6 +36,7 @@ fn main() {
             gl.draw(render_args.viewport(), |c, gl| {
                 graphics::clear([0.0, 0.0, 0.0, 0.0], gl);
                 i_block.draw(c, gl);
+                l_block.draw(c, gl);
                 o_block.draw(c, gl);
                 s_block.draw(c, gl);
                 t_block.draw(c, gl);
@@ -83,7 +85,7 @@ impl Cell {
     }
 }
 
-enum BlockShape { I, O, S, T, Z }
+enum BlockShape { I, L, O, S, T, Z }
 
 struct Block {
     cells: [Cell; 4],
@@ -92,7 +94,7 @@ struct Block {
 
 impl Block {
     fn i(x: Scalar, y: Scalar) -> Block {
-        let color = [0.4, 0.4, 0.0, 0.7];
+        let color = [0.4, 0.3, 0.0, 0.7];
 
         Block {
             shape: BlockShape::I,
@@ -101,6 +103,20 @@ impl Block {
                 Cell::new(x, y + cells(1), color),
                 Cell::new(x, y + cells(2), color),
                 Cell::new(x, y + cells(3), color),
+            ]
+        }
+    }
+
+    fn l(x: Scalar, y: Scalar) -> Block {
+        let color = [0.6, 0.6, 0.1, 0.7];
+
+        Block {
+            shape: BlockShape::L,
+            cells: [
+                Cell::new(x, y, color),
+                Cell::new(x + cells(1), y, color),
+                Cell::new(x + cells(1), y + cells(1), color),
+                Cell::new(x + cells(1), y + cells(2), color),
             ]
         }
     }
