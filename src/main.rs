@@ -12,7 +12,7 @@ use graphics::types::Color;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 use piston::event_loop::Events;
-use piston::input::RenderEvent;
+use piston::input::{ RenderEvent, UpdateEvent };
 use piston::window::WindowSettings;
 use rand::Rng;
 
@@ -25,7 +25,8 @@ fn main() {
         .build().unwrap();
     let mut gl = GlGraphics::new(opengl);
 
-    let block = random_block(cells(1), cells(1));
+    let mut block = random_block(cells(1), cells(1));
+    let mut dt = 0.0;
 
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
@@ -34,6 +35,14 @@ fn main() {
                 graphics::clear([0.0, 0.0, 0.0, 0.0], gl);
                 block.draw(c, gl);
             })
+        }
+
+        if let Some(update_args) = event.update_args() {
+            dt += update_args.dt;
+            if dt >= 0.5 {
+                block.move_down();
+                dt = 0.0;
+            }
         }
     }
 }
@@ -75,6 +84,10 @@ impl Cell {
         self.rect.draw(square(self.x, self.y, self.size),
                        &c.draw_state, c.transform, g)
     }
+
+    fn move_down(&mut self) {
+        self.y += cells(1)
+    }
 }
 
 enum BlockShape { I, L, O, P, S, T, Z }
@@ -98,6 +111,18 @@ fn random_block(x: Scalar, y: Scalar) -> Block {
 }
 
 impl Block {
+    fn draw<G: Graphics>(&self, c: Context, g: &mut G) {
+        for cell in self.cells.iter() {
+            cell.draw(c, g)
+        }
+    }
+
+    fn move_down(&mut self) {
+        for cell in self.cells.iter_mut() {
+            cell.move_down()
+        }
+    }
+
     fn i(x: Scalar, y: Scalar) -> Block {
         let color = [0.4, 0.4, 0.4, 0.7];
 
@@ -193,12 +218,6 @@ impl Block {
                 Cell::new(x + cells(1), y + cells(1), color),
                 Cell::new(x,            y + cells(2), color),
             ]
-        }
-    }
-
-    fn draw<G: Graphics>(&self, c: Context, g: &mut G) {
-        for cell in self.cells.iter() {
-            cell.draw(c, g)
         }
     }
 }
