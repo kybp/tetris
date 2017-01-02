@@ -2,6 +2,7 @@ extern crate graphics;
 extern crate glutin_window;
 extern crate opengl_graphics;
 extern crate piston;
+extern crate rand;
 
 use graphics::{ Context, Graphics };
 use graphics::math::Scalar;
@@ -13,6 +14,7 @@ use opengl_graphics::{ GlGraphics, OpenGL };
 use piston::event_loop::Events;
 use piston::input::RenderEvent;
 use piston::window::WindowSettings;
+use rand::Rng;
 
 fn main() {
     let opengl = OpenGL::V3_2;
@@ -23,26 +25,14 @@ fn main() {
         .build().unwrap();
     let mut gl = GlGraphics::new(opengl);
 
-    let i_block = Block::i(cells(1), cells(1));
-    let l_block = Block::l(cells(2), cells(3));
-    let o_block = Block::o(cells(2), cells(1));
-    let p_block = Block::p(cells(6), cells(2));
-    let s_block = Block::s(cells(4), cells(1));
-    let t_block = Block::t(cells(4), cells(3));
-    let z_block = Block::z(cells(1), cells(4));
+    let block = random_block(cells(1), cells(1));
 
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
         if let Some(render_args) = event.render_args() {
             gl.draw(render_args.viewport(), |c, gl| {
                 graphics::clear([0.0, 0.0, 0.0, 0.0], gl);
-                i_block.draw(c, gl);
-                l_block.draw(c, gl);
-                o_block.draw(c, gl);
-                p_block.draw(c, gl);
-                s_block.draw(c, gl);
-                t_block.draw(c, gl);
-                z_block.draw(c, gl);
+                block.draw(c, gl);
             })
         }
     }
@@ -92,6 +82,19 @@ enum BlockShape { I, L, O, P, S, T, Z }
 struct Block {
     cells: [Cell; 4],
     shape: BlockShape,
+}
+
+fn random_block(x: Scalar, y: Scalar) -> Block {
+    match rand::thread_rng().gen_range(0, 7) {
+        0 => Block::i(x, y),
+        1 => Block::l(x, y),
+        2 => Block::o(x, y),
+        3 => Block::p(x, y),
+        4 => Block::s(x, y),
+        5 => Block::t(x, y),
+        6 => Block::z(x, y),
+        _ => panic!("Invalid random block"),
+    }
 }
 
 impl Block {
