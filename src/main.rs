@@ -16,10 +16,15 @@ use piston::input::{ RenderEvent, UpdateEvent };
 use piston::window::WindowSettings;
 use rand::Rng;
 
+const BOARD_CELL_HEIGHT: u32 = 20;
+const BOARD_CELL_WIDTH:  u32 = 10;
+
 fn main() {
     let opengl = OpenGL::V3_2;
+    let height = cells(BOARD_CELL_HEIGHT) as u32;
+    let width  = cells(BOARD_CELL_WIDTH)  as u32;
     let mut window: Window =
-        WindowSettings::new("Tetris", [640, 480])
+        WindowSettings::new("Tetris", (width, height))
         .opengl(opengl)
         .exit_on_esc(true)
         .build().unwrap();
@@ -28,20 +33,30 @@ fn main() {
     let mut block = random_block(cells(1), cells(1));
     let mut dt = 0.0;
 
+    let mut placed_blocks = Vec::<Block>::new();
+
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
         if let Some(render_args) = event.render_args() {
             gl.draw(render_args.viewport(), |c, gl| {
                 graphics::clear([0.0, 0.0, 0.0, 0.0], gl);
                 block.draw(c, gl);
+                for block in &placed_blocks {
+                    block.draw(c, gl);
+                }
             })
         }
 
         if let Some(update_args) = event.update_args() {
             dt += update_args.dt;
             if dt >= 0.5 {
-                block.move_down();
                 dt = 0.0;
+                if block.can_move_down() {
+                    block.move_down();
+                } else {
+                    placed_blocks.push(block);
+                    block = random_block(cells(1), cells(1));
+                }
             }
         }
     }
@@ -85,6 +100,11 @@ impl Cell {
                        &c.draw_state, c.transform, g)
     }
 
+    fn can_move_down(&self) -> bool {
+        let bottom_y = self.y + cells(1);
+        bottom_y + cells(1) <= cells(BOARD_CELL_HEIGHT)
+    }
+
     fn move_down(&mut self) {
         self.y += cells(1)
     }
@@ -117,9 +137,15 @@ impl Block {
         }
     }
 
+    fn can_move_down(&self) -> bool {
+        self.cells.iter().all(Cell::can_move_down)
+    }
+
     fn move_down(&mut self) {
-        for cell in self.cells.iter_mut() {
-            cell.move_down()
+        if self.can_move_down() {
+            for cell in self.cells.iter_mut() {
+                cell.move_down()
+            }
         }
     }
 
