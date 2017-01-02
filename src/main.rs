@@ -26,6 +26,7 @@ fn main() {
     let i_block = Block::i(cells(1), cells(1));
     let o_block = Block::o(cells(2), cells(1));
     let s_block = Block::s(cells(4), cells(1));
+    let z_block = Block::z(cells(1), cells(4));
 
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
@@ -35,6 +36,7 @@ fn main() {
                 i_block.draw(c, gl);
                 o_block.draw(c, gl);
                 s_block.draw(c, gl);
+                z_block.draw(c, gl);
             })
         }
     }
@@ -125,6 +127,19 @@ impl Block {
                 Cell::new(x,            y + cells(1), color),
                 Cell::new(x + cells(1), y + cells(1),  color),
                 Cell::new(x + cells(1), y + cells(2), color),
+            ]
+        }
+    }
+    fn z(x: Scalar, y: Scalar) -> Block {
+        let color = [0.0, 0.7, 0.3, 0.7];
+
+        Block {
+            shape: BlockShape::Z,
+            cells: [
+                Cell::new(x + cells(1), y,            color),
+                Cell::new(x,            y + cells(1), color),
+                Cell::new(x + cells(1), y + cells(1), color),
+                Cell::new(x,            y + cells(2), color),
             ]
         }
     }
