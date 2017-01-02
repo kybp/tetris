@@ -51,7 +51,7 @@ fn main() {
             dt += update_args.dt;
             if dt >= 0.5 {
                 dt = 0.0;
-                if block.can_move_down() {
+                if block.can_move_down(&placed_blocks) {
                     block.move_down();
                 } else {
                     placed_blocks.push(block);
@@ -137,15 +137,34 @@ impl Block {
         }
     }
 
-    fn can_move_down(&self) -> bool {
-        self.cells.iter().all(Cell::can_move_down)
+    fn contains(&self, cell: &Cell) -> bool {
+        self.cells.iter().any(|other| {
+            cell.x == other.x && cell.y == other.y
+        })
+    }
+
+    fn can_move_down(&self, placed_blocks: &Vec<Block>) -> bool {
+        self.cells.iter().all(|cell| {
+            if ! cell.can_move_down() {
+                return false
+            }
+
+            let moved = Cell {
+                x:    cell.x,
+                y:    cell.y + cells(1),
+                size: cell.size,
+                rect: cell.rect,
+            };
+
+            ! placed_blocks.iter().any(|block| {
+                block.contains(&moved)
+            })
+        })
     }
 
     fn move_down(&mut self) {
-        if self.can_move_down() {
-            for cell in self.cells.iter_mut() {
-                cell.move_down()
-            }
+        for cell in self.cells.iter_mut() {
+            cell.move_down()
         }
     }
 
