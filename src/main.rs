@@ -26,6 +26,7 @@ fn main() {
     let i_block = Block::i(cells(1), cells(1));
     let l_block = Block::l(cells(2), cells(3));
     let o_block = Block::o(cells(2), cells(1));
+    let p_block = Block::p(cells(6), cells(2));
     let s_block = Block::s(cells(4), cells(1));
     let t_block = Block::t(cells(4), cells(3));
     let z_block = Block::z(cells(1), cells(4));
@@ -38,6 +39,7 @@ fn main() {
                 i_block.draw(c, gl);
                 l_block.draw(c, gl);
                 o_block.draw(c, gl);
+                p_block.draw(c, gl);
                 s_block.draw(c, gl);
                 t_block.draw(c, gl);
                 z_block.draw(c, gl);
@@ -71,7 +73,7 @@ impl Cell {
                 color: color,
                 shape: Square,
                 border: Some(Border {
-                    color: border_color,
+                    color:  border_color,
                     radius: border_radius,
                 })
             }
@@ -85,7 +87,7 @@ impl Cell {
     }
 }
 
-enum BlockShape { I, L, O, S, T, Z }
+enum BlockShape { I, L, O, P, S, T, Z }
 
 struct Block {
     cells: [Cell; 4],
@@ -94,7 +96,7 @@ struct Block {
 
 impl Block {
     fn i(x: Scalar, y: Scalar) -> Block {
-        let color = [0.4, 0.3, 0.0, 0.7];
+        let color = [0.4, 0.4, 0.4, 0.7];
 
         Block {
             shape: BlockShape::I,
@@ -113,8 +115,8 @@ impl Block {
         Block {
             shape: BlockShape::L,
             cells: [
-                Cell::new(x, y, color),
-                Cell::new(x + cells(1), y, color),
+                Cell::new(x,            y,            color),
+                Cell::new(x + cells(1), y,            color),
                 Cell::new(x + cells(1), y + cells(1), color),
                 Cell::new(x + cells(1), y + cells(2), color),
             ]
@@ -135,6 +137,20 @@ impl Block {
         }
     }
 
+    fn p(x: Scalar, y: Scalar) -> Block {
+        let color = [0.4, 0.3, 0.0, 0.7];
+
+        Block {
+            shape: BlockShape::P,
+            cells: [
+                Cell::new(x,            y,            color),
+                Cell::new(x + cells(1), y,            color),
+                Cell::new(x,            y + cells(1), color),
+                Cell::new(x,            y + cells(2), color),
+            ]
+        }
+    }
+
     fn s(x: Scalar, y: Scalar) -> Block {
         let color = [0.0, 0.0, 0.8, 0.7];
 
@@ -143,7 +159,7 @@ impl Block {
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
-                Cell::new(x + cells(1), y + cells(1),  color),
+                Cell::new(x + cells(1), y + cells(1), color),
                 Cell::new(x + cells(1), y + cells(2), color),
             ]
         }
