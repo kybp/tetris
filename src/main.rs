@@ -23,14 +23,16 @@ fn main() {
         .build().unwrap();
     let mut gl = GlGraphics::new(opengl);
 
-    let block = Block::new(50.0, 50.0, [0.4, 0.4, 0.0, 0.7]);
+    let i_block = Block::i(50.0, 50.0);
+    let o_block = Block::o(50.0 + CELL_SIZE * 2.0, 50.0);
 
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
         if let Some(render_args) = event.render_args() {
             gl.draw(render_args.viewport(), |c, gl| {
                 graphics::clear([0.0, 0.0, 0.0, 0.0], gl);
-                block.draw(c, gl);
+                i_block.draw(c, gl);
+                o_block.draw(c, gl);
             })
         }
     }
@@ -71,14 +73,33 @@ impl Cell {
     }
 }
 
+enum BlockShape { I, O, S, T, Z }
+
 struct Block {
     cells: [Cell; 4],
+    shape: BlockShape,
 }
 
 impl Block {
-    fn new(x: Scalar, y: Scalar, color: Color) -> Block {
-        let cell_size = 50.0;
+    fn o(x: Scalar, y: Scalar) -> Block {
+        let color = [0.7, 0.0, 0.7, 0.7];
+
         Block {
+            shape: BlockShape::O,
+            cells: [
+                Cell::new(x, y, color),
+                Cell::new(x + CELL_SIZE, y,             color),
+                Cell::new(x,             y + CELL_SIZE, color),
+                Cell::new(x + CELL_SIZE, y + CELL_SIZE, color),
+            ]
+        }
+    }
+
+    fn i(x: Scalar, y: Scalar) -> Block {
+        let color = [0.4, 0.4, 0.0, 0.7];
+
+        Block {
+            shape: BlockShape::I,
             cells: [
                 Cell::new(x, y + CELL_SIZE * 0.0, color),
                 Cell::new(x, y + CELL_SIZE * 1.0, color),
