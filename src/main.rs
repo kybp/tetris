@@ -34,7 +34,7 @@ fn main() {
 
     let mut block = random_block(cells(1), cells(1));
     let mut dt = 0.0;
-
+    let mut paused = false;
     let mut placed_blocks = Vec::<Block>::new();
 
     let mut events = window.events();
@@ -50,6 +50,10 @@ fn main() {
         }
 
         if let Some(update_args) = event.update_args() {
+            if paused {
+                continue;
+            }
+
             dt += update_args.dt;
             if dt >= 0.5 {
                 dt = 0.0;
@@ -63,6 +67,14 @@ fn main() {
         }
 
         if let Some(Button::Keyboard(key)) = event.press_args() {
+            if key == Key::Space {
+                paused = ! paused;
+            }
+
+            if paused {
+                continue;
+            }
+
             match key {
                 Key::Left
                     if block.can_move_in_direction(Left, &placed_blocks) => {
