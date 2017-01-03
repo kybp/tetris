@@ -147,7 +147,7 @@ impl Cell {
 }
 
 struct Block {
-    origin_index: usize,
+    origin_index: Option<usize>,
     cells: [Cell; 4],
 }
 
@@ -178,11 +178,18 @@ impl Block {
     }
 
     fn rotate(&mut self) {
-        let origin_x = self.cells[self.origin_index].x;
-        let origin_y = self.cells[self.origin_index].y;
+        let origin_x;
+        let origin_y;
+
+        if let Some(i) = self.origin_index {
+            origin_x = self.cells[i].x;
+            origin_y = self.cells[i].y;
+        } else {
+            return;
+        }
 
         for (i, cell) in self.cells.iter_mut().enumerate() {
-            if i == self.origin_index {
+            if Some(i) == self.origin_index {
                 continue
             }
 
@@ -242,7 +249,7 @@ impl Block {
         let color = [0.4, 0.4, 0.4, 0.7];
 
         Block {
-            origin_index: 1,
+            origin_index: Some(1),
             cells: [
                 Cell::new(x, y + cells(0), color),
                 Cell::new(x, y + cells(1), color),
@@ -256,7 +263,7 @@ impl Block {
         let color = [0.6, 0.6, 0.1, 0.7];
 
         Block {
-            origin_index: 2,
+            origin_index: Some(2),
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -270,7 +277,7 @@ impl Block {
         let color = [0.7, 0.0, 0.7, 0.7];
 
         Block {
-            origin_index: 1,
+            origin_index: None,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -284,7 +291,7 @@ impl Block {
         let color = [0.4, 0.3, 0.0, 0.7];
 
         Block {
-            origin_index: 2,
+            origin_index: Some(2),
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -298,7 +305,7 @@ impl Block {
         let color = [0.0, 0.0, 0.8, 0.7];
 
         Block {
-            origin_index: 1,
+            origin_index: Some(1),
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
@@ -312,7 +319,7 @@ impl Block {
         let color = [0.6, 0.0, 0.0, 0.7];
 
         Block {
-            origin_index: 1,
+            origin_index: Some(1),
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
@@ -326,7 +333,7 @@ impl Block {
         let color = [0.0, 0.7, 0.3, 0.7];
 
         Block {
-            origin_index: 1,
+            origin_index: Some(1),
             cells: [
                 Cell::new(x + cells(1), y,            color),
                 Cell::new(x,            y + cells(1), color),
