@@ -72,6 +72,10 @@ fn main() {
                     if block.can_move_in_direction(Right, &placed_blocks) => {
                         block.move_in_direction(Right);
                     },
+                Key::Down
+                    if block.can_move_in_direction(Down, &placed_blocks) => {
+                        block.move_in_direction(Down);
+                    },
                 _ => {}
             }
         }
