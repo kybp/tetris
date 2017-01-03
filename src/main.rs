@@ -12,7 +12,7 @@ use graphics::types::Color;
 use glutin_window::GlutinWindow as Window;
 use opengl_graphics::{ GlGraphics, OpenGL };
 use piston::event_loop::Events;
-use piston::input::{ RenderEvent, UpdateEvent };
+use piston::input::{ Button, Key, PressEvent, RenderEvent, UpdateEvent };
 use piston::window::WindowSettings;
 use rand::Rng;
 
@@ -57,6 +57,18 @@ fn main() {
                     placed_blocks.push(block);
                     block = random_block(cells(1), cells(1));
                 }
+            }
+        }
+
+        if let Some(Button::Keyboard(key)) = event.press_args() {
+            match key {
+                Key::Left if block.can_move_left(&placed_blocks) => {
+                    block.move_left();
+                },
+                Key::Right if block.can_move_right(&placed_blocks) => {
+                    block.move_right();
+                },
+                _ => {}
             }
         }
     }
@@ -106,7 +118,24 @@ impl Cell {
     }
 
     fn move_down(&mut self) {
-        self.y += cells(1)
+        self.y += cells(1);
+    }
+
+    fn can_move_left(&self) -> bool {
+        self.x - cells(1) >= 0.0
+    }
+
+    fn move_left(&mut self) {
+        self.x -= cells(1);
+    }
+
+    fn can_move_right(&self) -> bool {
+        let right_x = self.x + cells(1);
+        right_x + cells(1) <= cells(BOARD_CELL_WIDTH)
+    }
+
+    fn move_right(&mut self) {
+        self.x += cells(1);
     }
 }
 
@@ -161,7 +190,57 @@ impl Block {
 
     fn move_down(&mut self) {
         for cell in self.cells.iter_mut() {
-            cell.move_down()
+            cell.move_down();
+        }
+    }
+
+    fn can_move_left(&self, placed_blocks: &Vec<Block>) -> bool {
+        self.cells.iter().all(|cell| {
+            if ! cell.can_move_left() {
+                return false
+            }
+
+            let moved = Cell {
+                x:    cell.x - cells(1),
+                y:    cell.y,
+                size: cell.size,
+                rect: cell.rect,
+            };
+
+            ! placed_blocks.iter().any(|block| {
+                block.contains(&moved)
+            })
+        })
+    }
+
+    fn move_left(&mut self) {
+        for cell in self.cells.iter_mut() {
+            cell.move_left();
+        }
+    }
+
+    fn can_move_right(&self, placed_blocks: &Vec<Block>) -> bool {
+        self.cells.iter().all(|cell| {
+            if ! cell.can_move_right() {
+                return false
+            }
+
+            let moved = Cell {
+                x:    cell.x + cells(1),
+                y:    cell.y,
+                size: cell.size,
+                rect: cell.rect,
+            };
+
+            ! placed_blocks.iter().any(|block| {
+                block.contains(&moved)
+            })
+        })
+    }
+
+    fn move_right(&mut self) {
+        for cell in self.cells.iter_mut() {
+            cell.move_right();
         }
     }
 
