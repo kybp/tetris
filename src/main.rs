@@ -300,7 +300,7 @@ impl Block {
     }
 
     fn p(x: Scalar, y: Scalar) -> Block {
-        let color = [0.4, 0.3, 0.0, 0.7];
+        let color = [0.4, 0.2, 0.0, 0.7];
 
         Block {
             origin_index: Some(2),
