@@ -172,6 +172,14 @@ impl Block {
         })
     }
 
+    pub fn try_move_in_direction(
+        &mut self, direction: Direction, placed_cells: &Vec<Vec<Cell>>
+    ) {
+        if self.can_move_in_direction(direction, placed_cells) {
+            self.move_in_direction(direction);
+        }
+    }
+
     pub fn move_in_direction(&mut self, direction: Direction) {
         for cell in self.cells.iter_mut() {
             cell.move_in_direction(direction);

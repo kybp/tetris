@@ -83,19 +83,18 @@ fn main() {
             }
 
             match key {
-                Key::Left
-                    if block.can_move_in_direction(Left, &placed_cells) => {
-                        block.move_in_direction(Left);
-                    },
-                Key::Right
-                    if block.can_move_in_direction(Right, &placed_cells) => {
-                        block.move_in_direction(Right);
-                    },
-                Key::Down
-                    if block.can_move_in_direction(Down, &placed_cells) => {
-                        block.move_in_direction(Down);
-                    },
-                Key::Up => block.try_rotate(&placed_cells),
+                Key::Left => {
+                    block.try_move_in_direction(Left, &placed_cells);
+                },
+                Key::Right => {
+                    block.try_move_in_direction(Right, &placed_cells);
+                },
+                Key::Down => {
+                    block.try_move_in_direction(Down, &placed_cells);
+                },
+                Key::Up => {
+                    block.try_rotate(&placed_cells);
+                },
                 _ => {}
             }
         }
