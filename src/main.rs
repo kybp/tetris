@@ -88,14 +88,14 @@ fn main() {
                     if block.can_move_in_direction(Down, &placed_blocks) => {
                         block.move_in_direction(Down);
                     },
-                Key::Up => block.rotate(),
+                Key::Up => block.try_rotate(&placed_blocks),
                 _ => {}
             }
         }
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 struct Cell {
     x:    Scalar,
     y:    Scalar,
@@ -151,13 +151,18 @@ impl Cell {
     ) -> bool {
         let mut moved = self.clone();
         moved.move_in_direction(direction);
-        moved.x >= 0.0 &&
-            moved.x + cells(1) <= cells(BOARD_CELL_WIDTH)  + CELL_BORDER &&
-            moved.y + cells(1) <= cells(BOARD_CELL_HEIGHT) + CELL_BORDER &&
-            ! placed_blocks.iter().any(|block| block.contains(&moved))
+        moved.valid(placed_blocks)
+    }
+
+    fn valid(&self, placed_blocks: &Vec<Block>) -> bool {
+        self.x >= 0.0 &&
+            self.x + cells(1) <= cells(BOARD_CELL_WIDTH)  + CELL_BORDER &&
+            self.y + cells(1) <= cells(BOARD_CELL_HEIGHT) + CELL_BORDER &&
+            ! placed_blocks.iter().any(|block| block.contains(&self))
     }
 }
 
+#[derive(Clone)]
 struct Block {
     origin_index: Option<usize>,
     cells: [Cell; 4],
@@ -187,6 +192,14 @@ impl Block {
         self.cells.iter().any(|other| {
             cell.x == other.x && cell.y == other.y
         })
+    }
+
+    fn try_rotate(&mut self, placed_blocks: &Vec<Block>) {
+        let mut rotated = self.clone();
+        rotated.rotate();
+        if rotated.valid(placed_blocks) {
+            *self = rotated;
+        }
     }
 
     fn rotate(&mut self) {
@@ -241,6 +254,10 @@ impl Block {
                 cell.y -= cells(scale);
             }
         }
+    }
+
+    fn valid(&self, placed_blocks: &Vec<Block>) -> bool {
+        self.cells.iter().all(|cell| cell.valid(placed_blocks))
     }
 
     fn can_move_in_direction(
