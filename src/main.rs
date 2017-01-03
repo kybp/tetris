@@ -206,9 +206,9 @@ struct Block {
 fn random_block(x: Scalar, y: Scalar) -> Block {
     match rand::thread_rng().gen_range(0, 7) {
         0 => Block::i(x, y),
+        3 => Block::j(x, y),
         1 => Block::l(x, y),
         2 => Block::o(x, y),
-        3 => Block::p(x, y),
         4 => Block::s(x, y),
         5 => Block::t(x, y),
         6 => Block::z(x, y),
@@ -345,7 +345,7 @@ impl Block {
         }
     }
 
-    fn p(x: Scalar, y: Scalar) -> Block {
+    fn j(x: Scalar, y: Scalar) -> Block {
         let color = [0.4, 0.2, 0.0, 0.7];
 
         Block {
