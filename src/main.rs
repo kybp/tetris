@@ -90,7 +90,8 @@ struct Cell {
     rect: Rectangle,
 }
 
-const CELL_SIZE: Scalar = 30.0;
+const CELL_SIZE:   Scalar = 30.0;
+const CELL_BORDER: Scalar = CELL_SIZE / 10.0;
 
 fn cells(n: u32) -> Scalar {
     n as Scalar * CELL_SIZE
@@ -101,18 +102,18 @@ enum Direction { Left, Right, Down }
 
 impl Cell {
     fn new(x: Scalar, y: Scalar, color: Color) -> Cell {
-        let border_radius = CELL_SIZE / 10.0;
         let mut border_color = color;
         border_color[3] -= 0.3;
 
         Cell {
-            x: x, y: y, size: CELL_SIZE - border_radius * 2.0,
+            x: x + CELL_BORDER, y: y + CELL_BORDER,
+            size: CELL_SIZE - CELL_BORDER * 2.0,
             rect: Rectangle {
                 color: color,
                 shape: Square,
                 border: Some(Border {
                     color:  border_color,
-                    radius: border_radius,
+                    radius: CELL_BORDER,
                 })
             }
         }
@@ -138,8 +139,8 @@ impl Cell {
         let mut moved = self.clone();
         moved.move_in_direction(direction);
         moved.x >= 0.0 &&
-            moved.x + cells(1) <= cells(BOARD_CELL_WIDTH) &&
-            moved.y + cells(1) <= cells(BOARD_CELL_HEIGHT) &&
+            moved.x + cells(1) <= cells(BOARD_CELL_WIDTH)  + CELL_BORDER &&
+            moved.y + cells(1) <= cells(BOARD_CELL_HEIGHT) + CELL_BORDER &&
             ! placed_blocks.iter().any(|block| block.contains(&moved))
     }
 }
