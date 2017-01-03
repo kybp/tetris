@@ -4,6 +4,7 @@ extern crate opengl_graphics;
 extern crate piston;
 extern crate rand;
 
+use std::collections::HashMap;
 use graphics::{ Context, Graphics };
 use graphics::math::Scalar;
 use graphics::rectangle::{ Border, Rectangle };
@@ -33,7 +34,7 @@ fn main() {
     let mut gl = GlGraphics::new(opengl);
 
     let mut block        = random_block(cells(1), cells(1));
-    let mut score        = 0;
+    let mut score        = Score::new();
     let mut dt           = 0.0;
     let mut paused       = false;
     let mut placed_cells = Vec::<Vec<Cell>>::new();
@@ -63,10 +64,11 @@ fn main() {
                 if block.can_move_in_direction(Down, &placed_cells) {
                     block.move_in_direction(Down);
                 } else {
+                    *score.counts.get_mut(&block.shape).unwrap() += 1;
                     for &cell in block.cells.iter() {
                         add_cell(cell, &mut placed_cells);
                     }
-                    score += clear_filled_lines(&mut placed_cells);
+                    clear_filled_lines(&mut placed_cells, &mut score);
                     block = random_block(cells(1), cells(1));
                 }
             }
@@ -99,7 +101,33 @@ fn main() {
             }
         }
     }
-    println!("You got {} points.", score);
+
+    println!("You got {} points.", score.points);
+}
+
+struct Score {
+    points: usize,
+    lines:  usize,
+    counts: HashMap<BlockShape, usize>,
+}
+
+impl Score {
+    fn new() -> Score {
+        use BlockShape::*;
+        let mut counts = HashMap::new();
+        counts.insert(I, 0);
+        counts.insert(J, 0);
+        counts.insert(L, 0);
+        counts.insert(O, 0);
+        counts.insert(S, 0);
+        counts.insert(T, 0);
+        counts.insert(Z, 0);
+        Score {
+            points: 0,
+            lines:  0,
+            counts: counts,
+        }
+    }
 }
 
 fn add_cell(cell: Cell, placed_cells: &mut Vec<Vec<Cell>>) {
@@ -114,7 +142,7 @@ fn add_cell(cell: Cell, placed_cells: &mut Vec<Vec<Cell>>) {
     placed_cells.sort_by(|a, b| b[0].y.partial_cmp(&a[0].y).unwrap());
 }
 
-fn clear_filled_lines(placed_cells: &mut Vec<Vec<Cell>>) -> usize {
+fn clear_filled_lines(placed_cells: &mut Vec<Vec<Cell>>, score: &mut Score) {
     for i in 0..placed_cells.len() {
         if placed_cells[i].len() == BOARD_CELL_WIDTH as usize {
             for j in i..placed_cells.len() {
@@ -129,12 +157,13 @@ fn clear_filled_lines(placed_cells: &mut Vec<Vec<Cell>>) -> usize {
     placed_cells.retain(|row| row.len() != BOARD_CELL_WIDTH as usize);
     let lines_cleared = starting_rows - placed_cells.len();
 
-    match lines_cleared {
+    score.points += match lines_cleared {
         1 =>  100,
         2 =>  200,
         3 =>  500,
         _ => 1000,
-    }
+    };
+    score.lines += lines_cleared;
 }
 
 #[derive(Clone, Copy)]
@@ -208,7 +237,7 @@ impl Cell {
     }
 }
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, Eq, Hash, PartialEq)]
 enum BlockShape { I, J, L, O, S, T, Z }
 
 #[derive(Clone)]
