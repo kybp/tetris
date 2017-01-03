@@ -76,7 +76,7 @@ fn main() {
                     if block.can_move_in_direction(Down, &placed_blocks) => {
                         block.move_in_direction(Down);
                     },
-                Key::Space => block.rotate(),
+                Key::Up => block.rotate(),
                 _ => {}
             }
         }
