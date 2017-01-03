@@ -208,10 +208,14 @@ impl Cell {
     }
 }
 
+#[derive(Clone, PartialEq)]
+enum BlockShape { I, J, L, O, S, T, Z }
+
 #[derive(Clone)]
 struct Block {
+    shape:        BlockShape,
+    cells:        [Cell; 4],
     origin_index: Option<usize>,
-    cells: [Cell; 4],
 }
 
 fn random_block(x: Scalar, y: Scalar) -> Block {
@@ -243,15 +247,13 @@ impl Block {
     }
 
     fn rotate(&mut self) {
-        let origin_x;
-        let origin_y;
-
-        if let Some(i) = self.origin_index {
-            origin_x = self.cells[i].x;
-            origin_y = self.cells[i].y;
-        } else {
-            return;
+        if self.shape == BlockShape::O {
+            return
         }
+
+        let i = self.origin_index.unwrap();
+        let origin_x = self.cells[i].x;
+        let origin_y = self.cells[i].y;
 
         for (i, cell) in self.cells.iter_mut().enumerate() {
             if Some(i) == self.origin_index {
@@ -318,6 +320,7 @@ impl Block {
         let color = [0.4, 0.4, 0.4, 0.7];
 
         Block {
+            shape: BlockShape::I,
             origin_index: Some(1),
             cells: [
                 Cell::new(x, y + cells(0), color),
@@ -332,6 +335,7 @@ impl Block {
         let color = [0.6, 0.6, 0.1, 0.7];
 
         Block {
+            shape: BlockShape::L,
             origin_index: Some(2),
             cells: [
                 Cell::new(x,            y,            color),
@@ -346,6 +350,7 @@ impl Block {
         let color = [0.7, 0.0, 0.7, 0.7];
 
         Block {
+            shape: BlockShape::O,
             origin_index: None,
             cells: [
                 Cell::new(x,            y,            color),
@@ -360,6 +365,7 @@ impl Block {
         let color = [0.4, 0.2, 0.0, 0.7];
 
         Block {
+            shape: BlockShape::J,
             origin_index: Some(2),
             cells: [
                 Cell::new(x,            y,            color),
@@ -374,6 +380,7 @@ impl Block {
         let color = [0.0, 0.0, 0.8, 0.7];
 
         Block {
+            shape: BlockShape::S,
             origin_index: Some(1),
             cells: [
                 Cell::new(x,            y,            color),
@@ -388,6 +395,7 @@ impl Block {
         let color = [0.6, 0.0, 0.0, 0.7];
 
         Block {
+            shape: BlockShape::T,
             origin_index: Some(1),
             cells: [
                 Cell::new(x,            y,            color),
@@ -402,6 +410,7 @@ impl Block {
         let color = [0.0, 0.7, 0.3, 0.7];
 
         Block {
+            shape: BlockShape::Z,
             origin_index: Some(1),
             cells: [
                 Cell::new(x + cells(1), y,            color),
