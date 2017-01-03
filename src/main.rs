@@ -35,7 +35,7 @@ fn main() {
     let mut block = random_block(cells(1), cells(1));
     let mut dt = 0.0;
     let mut paused = false;
-    let mut placed_cells = Vec::<Cell>::new();
+    let mut placed_cells = Vec::<Vec<Cell>>::new();
 
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
@@ -43,8 +43,10 @@ fn main() {
             gl.draw(render_args.viewport(), |c, gl| {
                 graphics::clear([0.0, 0.0, 0.0, 0.0], gl);
                 block.draw(c, gl);
-                for block in &placed_cells {
-                    block.draw(c, gl);
+                for row in &placed_cells {
+                    for block in row {
+                        block.draw(c, gl);
+                    }
                 }
             })
         }
@@ -61,7 +63,7 @@ fn main() {
                     block.move_in_direction(Down);
                 } else {
                     for &cell in block.cells.iter() {
-                        placed_cells.push(cell);
+                        add_cell(cell, &mut placed_cells);
                     }
                     block = random_block(cells(1), cells(1));
                 }
@@ -95,6 +97,17 @@ fn main() {
             }
         }
     }
+}
+
+fn add_cell(cell: Cell, placed_cells: &mut Vec<Vec<Cell>>) {
+    for row in placed_cells.iter_mut() {
+        if cell.y == row[0].y {
+            row.push(cell);
+            return;
+        }
+    }
+
+   placed_cells.push(vec![cell])
 }
 
 #[derive(Clone, Copy)]
@@ -149,19 +162,21 @@ impl Cell {
     }
 
     fn can_move_in_direction(
-        &self, direction: Direction, placed_cells: &Vec<Cell>
+        &self, direction: Direction, placed_cells: &Vec<Vec<Cell>>
     ) -> bool {
         let mut moved = self.clone();
         moved.move_in_direction(direction);
         moved.valid(placed_cells)
     }
 
-    fn valid(&self, placed_cells: &Vec<Cell>) -> bool {
+    fn valid(&self, placed_cells: &Vec<Vec<Cell>>) -> bool {
         self.x >= 0.0 &&
             self.x + cells(1) <= cells(BOARD_CELL_WIDTH)  + CELL_BORDER &&
             self.y + cells(1) <= cells(BOARD_CELL_HEIGHT) + CELL_BORDER &&
-            ! placed_cells.iter().any(|cell| {
-                self.x == cell.x && self.y == cell.y
+            ! placed_cells.iter().any(|row| {
+                row.iter().any(|cell| {
+                    self.x == cell.x && self.y == cell.y
+                })
             })
     }
 }
@@ -192,7 +207,7 @@ impl Block {
         }
     }
 
-    fn try_rotate(&mut self, placed_cells: &Vec<Cell>) {
+    fn try_rotate(&mut self, placed_cells: &Vec<Vec<Cell>>) {
         let mut rotated = self.clone();
         rotated.rotate();
         if rotated.valid(placed_cells) {
@@ -254,12 +269,12 @@ impl Block {
         }
     }
 
-    fn valid(&self, placed_cells: &Vec<Cell>) -> bool {
+    fn valid(&self, placed_cells: &Vec<Vec<Cell>>) -> bool {
         self.cells.iter().all(|cell| cell.valid(placed_cells))
     }
 
     fn can_move_in_direction(
-        &self, direction: Direction, placed_cells: &Vec<Cell>
+        &self, direction: Direction, placed_cells: &Vec<Vec<Cell>>
     ) -> bool {
         self.cells.iter().all(|cell| {
             cell.can_move_in_direction(direction, &placed_cells)
