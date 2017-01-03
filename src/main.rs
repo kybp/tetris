@@ -147,6 +147,7 @@ impl Cell {
 }
 
 struct Block {
+    origin_index: usize,
     cells: [Cell; 4],
 }
 
@@ -177,45 +178,48 @@ impl Block {
     }
 
     fn rotate(&mut self) {
-        let origin_x = self.cells[1].x;
-        let origin_y = self.cells[1].y;
+        let origin_x = self.cells[self.origin_index].x;
+        let origin_y = self.cells[self.origin_index].y;
 
-        for &i in [0, 2, 3].iter() {
-            if self.cells[i].x > origin_x && self.cells[i].y > origin_y {
-                self.cells[i].x -= cells(2);
-            } else if self.cells[i].x > origin_x && self.cells[i].y < origin_y {
-                self.cells[i].y += cells(2);
-            } else if self.cells[i].x < origin_x && self.cells[i].y < origin_y {
-                self.cells[i].x += cells(2);
-            } else if self.cells[i].x < origin_x && self.cells[i].y > origin_y {
-                self.cells[i].y -= cells(2);
+        for (i, cell) in self.cells.iter_mut().enumerate() {
+            if i == self.origin_index {
+                continue
             }
 
-            if self.cells[i].x != origin_x && self.cells[i].y != origin_y {
+            if cell.x > origin_x && cell.y > origin_y {
+                cell.x -= cells(2);
+                continue;
+            } else if cell.x > origin_x && cell.y < origin_y {
+                cell.y += cells(2);
+                continue;
+            } else if cell.x < origin_x && cell.y < origin_y {
+                cell.x += cells(2);
+                continue;
+            } else if cell.x < origin_x && cell.y > origin_y {
+                cell.y -= cells(2);
                 continue;
             }
 
             // For the cell not adjacent to the origin in an I-block,
             // we want to scale the movement by 2.
-            let scale = (if self.cells[i].x == origin_x {
-                self.cells[i].y - origin_y
+            let scale = (if cell.x == origin_x {
+                cell.y - origin_y
             } else {
-                self.cells[i].x - origin_x
+                cell.x - origin_x
             } / CELL_SIZE).abs() as u32;
 
-
-            if self.cells[i].x < origin_x {
-                self.cells[i].x += cells(scale);
-                self.cells[i].y -= cells(scale);
-            } else if self.cells[i].x > origin_x {
-                self.cells[i].x -= cells(scale);
-                self.cells[i].y += cells(scale);
-            } else if self.cells[i].y < origin_y {
-                self.cells[i].x += cells(scale);
-                self.cells[i].y += cells(scale);
-            } else if self.cells[i].y > origin_y {
-                self.cells[i].x -= cells(scale);
-                self.cells[i].y -= cells(scale);
+            if cell.x < origin_x {
+                cell.x += cells(scale);
+                cell.y -= cells(scale);
+            } else if cell.x > origin_x {
+                cell.x -= cells(scale);
+                cell.y += cells(scale);
+            } else if cell.y < origin_y {
+                cell.x += cells(scale);
+                cell.y += cells(scale);
+            } else if cell.y > origin_y {
+                cell.x -= cells(scale);
+                cell.y -= cells(scale);
             }
         }
     }
@@ -238,6 +242,7 @@ impl Block {
         let color = [0.4, 0.4, 0.4, 0.7];
 
         Block {
+            origin_index: 1,
             cells: [
                 Cell::new(x, y + cells(0), color),
                 Cell::new(x, y + cells(1), color),
@@ -251,6 +256,7 @@ impl Block {
         let color = [0.6, 0.6, 0.1, 0.7];
 
         Block {
+            origin_index: 2,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -264,6 +270,7 @@ impl Block {
         let color = [0.7, 0.0, 0.7, 0.7];
 
         Block {
+            origin_index: 1,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
@@ -277,9 +284,10 @@ impl Block {
         let color = [0.4, 0.3, 0.0, 0.7];
 
         Block {
+            origin_index: 2,
             cells: [
-                Cell::new(x + cells(1), y,            color),
                 Cell::new(x,            y,            color),
+                Cell::new(x + cells(1), y,            color),
                 Cell::new(x,            y + cells(1), color),
                 Cell::new(x,            y + cells(2), color),
             ]
@@ -290,6 +298,7 @@ impl Block {
         let color = [0.0, 0.0, 0.8, 0.7];
 
         Block {
+            origin_index: 1,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
@@ -303,6 +312,7 @@ impl Block {
         let color = [0.6, 0.0, 0.0, 0.7];
 
         Block {
+            origin_index: 1,
             cells: [
                 Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
@@ -316,6 +326,7 @@ impl Block {
         let color = [0.0, 0.7, 0.3, 0.7];
 
         Block {
+            origin_index: 1,
             cells: [
                 Cell::new(x + cells(1), y,            color),
                 Cell::new(x,            y + cells(1), color),
