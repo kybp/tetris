@@ -65,6 +65,7 @@ fn main() {
                     for &cell in block.cells.iter() {
                         add_cell(cell, &mut placed_cells);
                     }
+                    clear_filled_lines(&mut placed_cells);
                     block = random_block(cells(1), cells(1));
                 }
             }
@@ -107,7 +108,22 @@ fn add_cell(cell: Cell, placed_cells: &mut Vec<Vec<Cell>>) {
         }
     }
 
-   placed_cells.push(vec![cell])
+    placed_cells.push(vec![cell]);
+    placed_cells.sort_by(|a, b| b[0].y.partial_cmp(&a[0].y).unwrap());
+}
+
+fn clear_filled_lines(placed_cells: &mut Vec<Vec<Cell>>) {
+    for i in 0..placed_cells.len() {
+        if placed_cells[i].len() == BOARD_CELL_WIDTH as usize {
+            for j in i..placed_cells.len() {
+                for cell in placed_cells[j].iter_mut() {
+                    cell.move_in_direction(Direction::Down);
+                }
+            }
+        }
+    }
+
+    placed_cells.retain(|row| row.len() != BOARD_CELL_WIDTH as usize);
 }
 
 #[derive(Clone, Copy)]
