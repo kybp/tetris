@@ -32,9 +32,10 @@ fn main() {
         .build().unwrap();
     let mut gl = GlGraphics::new(opengl);
 
-    let mut block = random_block(cells(1), cells(1));
-    let mut dt = 0.0;
-    let mut paused = false;
+    let mut block        = random_block(cells(1), cells(1));
+    let mut score        = 0;
+    let mut dt           = 0.0;
+    let mut paused       = false;
     let mut placed_cells = Vec::<Vec<Cell>>::new();
 
     let mut events = window.events();
@@ -65,7 +66,7 @@ fn main() {
                     for &cell in block.cells.iter() {
                         add_cell(cell, &mut placed_cells);
                     }
-                    clear_filled_lines(&mut placed_cells);
+                    score += clear_filled_lines(&mut placed_cells);
                     block = random_block(cells(1), cells(1));
                 }
             }
@@ -98,6 +99,7 @@ fn main() {
             }
         }
     }
+    println!("You got {} points.", score);
 }
 
 fn add_cell(cell: Cell, placed_cells: &mut Vec<Vec<Cell>>) {
@@ -112,7 +114,7 @@ fn add_cell(cell: Cell, placed_cells: &mut Vec<Vec<Cell>>) {
     placed_cells.sort_by(|a, b| b[0].y.partial_cmp(&a[0].y).unwrap());
 }
 
-fn clear_filled_lines(placed_cells: &mut Vec<Vec<Cell>>) {
+fn clear_filled_lines(placed_cells: &mut Vec<Vec<Cell>>) -> usize {
     for i in 0..placed_cells.len() {
         if placed_cells[i].len() == BOARD_CELL_WIDTH as usize {
             for j in i..placed_cells.len() {
@@ -123,7 +125,16 @@ fn clear_filled_lines(placed_cells: &mut Vec<Vec<Cell>>) {
         }
     }
 
+    let starting_rows = placed_cells.len();
     placed_cells.retain(|row| row.len() != BOARD_CELL_WIDTH as usize);
+    let lines_cleared = starting_rows - placed_cells.len();
+
+    match lines_cleared {
+        1 =>  100,
+        2 =>  200,
+        3 =>  500,
+        _ => 1000,
+    }
 }
 
 #[derive(Clone, Copy)]
