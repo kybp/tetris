@@ -20,6 +20,8 @@ const BOARD_CELL_HEIGHT: u32 = 20;
 const BOARD_CELL_WIDTH:  u32 = 10;
 
 fn main() {
+    use Direction::*;
+
     let opengl = OpenGL::V3_2;
     let height = cells(BOARD_CELL_HEIGHT) as u32;
     let width  = cells(BOARD_CELL_WIDTH)  as u32;
@@ -51,8 +53,8 @@ fn main() {
             dt += update_args.dt;
             if dt >= 0.5 {
                 dt = 0.0;
-                if block.can_move_down(&placed_blocks) {
-                    block.move_down();
+                if block.can_move_in_direction(Down, &placed_blocks) {
+                    block.move_in_direction(Down);
                 } else {
                     placed_blocks.push(block);
                     block = random_block(cells(1), cells(1));
@@ -62,18 +64,21 @@ fn main() {
 
         if let Some(Button::Keyboard(key)) = event.press_args() {
             match key {
-                Key::Left if block.can_move_left(&placed_blocks) => {
-                    block.move_left();
-                },
-                Key::Right if block.can_move_right(&placed_blocks) => {
-                    block.move_right();
-                },
+                Key::Left
+                    if block.can_move_in_direction(Left, &placed_blocks) => {
+                        block.move_in_direction(Left);
+                    },
+                Key::Right
+                    if block.can_move_in_direction(Right, &placed_blocks) => {
+                        block.move_in_direction(Right);
+                    },
                 _ => {}
             }
         }
     }
 }
 
+#[derive(Clone)]
 struct Cell {
     x:    Scalar,
     y:    Scalar,
@@ -86,6 +91,9 @@ const CELL_SIZE: Scalar = 30.0;
 fn cells(n: u32) -> Scalar {
     n as Scalar * CELL_SIZE
 }
+
+#[derive(Clone, Copy)]
+enum Direction { Left, Right, Down }
 
 impl Cell {
     fn new(x: Scalar, y: Scalar, color: Color) -> Cell {
@@ -112,30 +120,23 @@ impl Cell {
                        &c.draw_state, c.transform, g)
     }
 
-    fn can_move_down(&self) -> bool {
-        let bottom_y = self.y + cells(1);
-        bottom_y + cells(1) <= cells(BOARD_CELL_HEIGHT)
+    fn move_in_direction(&mut self, direction: Direction) {
+        match direction {
+            Direction::Down  => self.y += cells(1),
+            Direction::Left  => self.x -= cells(1),
+            Direction::Right => self.x += cells(1),
+        }
     }
 
-    fn move_down(&mut self) {
-        self.y += cells(1);
-    }
-
-    fn can_move_left(&self) -> bool {
-        self.x - cells(1) >= 0.0
-    }
-
-    fn move_left(&mut self) {
-        self.x -= cells(1);
-    }
-
-    fn can_move_right(&self) -> bool {
-        let right_x = self.x + cells(1);
-        right_x + cells(1) <= cells(BOARD_CELL_WIDTH)
-    }
-
-    fn move_right(&mut self) {
-        self.x += cells(1);
+    fn can_move_in_direction(
+        &self, direction: Direction, placed_blocks: &Vec<Block>
+    ) -> bool {
+        let mut moved = self.clone();
+        moved.move_in_direction(direction);
+        moved.x >= 0.0 &&
+            moved.x + cells(1) <= cells(BOARD_CELL_WIDTH) &&
+            moved.y + cells(1) <= cells(BOARD_CELL_HEIGHT) &&
+            ! placed_blocks.iter().any(|block| block.contains(&moved))
     }
 }
 
@@ -169,78 +170,17 @@ impl Block {
         })
     }
 
-    fn can_move_down(&self, placed_blocks: &Vec<Block>) -> bool {
+    fn can_move_in_direction(
+        &self, direction: Direction, placed_blocks: &Vec<Block>
+    ) -> bool {
         self.cells.iter().all(|cell| {
-            if ! cell.can_move_down() {
-                return false
-            }
-
-            let moved = Cell {
-                x:    cell.x,
-                y:    cell.y + cells(1),
-                size: cell.size,
-                rect: cell.rect,
-            };
-
-            ! placed_blocks.iter().any(|block| {
-                block.contains(&moved)
-            })
+            cell.can_move_in_direction(direction, &placed_blocks)
         })
     }
 
-    fn move_down(&mut self) {
+    fn move_in_direction(&mut self, direction: Direction) {
         for cell in self.cells.iter_mut() {
-            cell.move_down();
-        }
-    }
-
-    fn can_move_left(&self, placed_blocks: &Vec<Block>) -> bool {
-        self.cells.iter().all(|cell| {
-            if ! cell.can_move_left() {
-                return false
-            }
-
-            let moved = Cell {
-                x:    cell.x - cells(1),
-                y:    cell.y,
-                size: cell.size,
-                rect: cell.rect,
-            };
-
-            ! placed_blocks.iter().any(|block| {
-                block.contains(&moved)
-            })
-        })
-    }
-
-    fn move_left(&mut self) {
-        for cell in self.cells.iter_mut() {
-            cell.move_left();
-        }
-    }
-
-    fn can_move_right(&self, placed_blocks: &Vec<Block>) -> bool {
-        self.cells.iter().all(|cell| {
-            if ! cell.can_move_right() {
-                return false
-            }
-
-            let moved = Cell {
-                x:    cell.x + cells(1),
-                y:    cell.y,
-                size: cell.size,
-                rect: cell.rect,
-            };
-
-            ! placed_blocks.iter().any(|block| {
-                block.contains(&moved)
-            })
-        })
-    }
-
-    fn move_right(&mut self) {
-        for cell in self.cells.iter_mut() {
-            cell.move_right();
+            cell.move_in_direction(direction);
         }
     }
 
