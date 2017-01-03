@@ -76,6 +76,7 @@ fn main() {
                     if block.can_move_in_direction(Down, &placed_blocks) => {
                         block.move_in_direction(Down);
                     },
+                Key::Space => block.rotate(),
                 _ => {}
             }
         }
@@ -175,6 +176,50 @@ impl Block {
         })
     }
 
+    fn rotate(&mut self) {
+        let origin_x = self.cells[1].x;
+        let origin_y = self.cells[1].y;
+
+        for &i in [0, 2, 3].iter() {
+            if self.cells[i].x > origin_x && self.cells[i].y > origin_y {
+                self.cells[i].x -= cells(2);
+            } else if self.cells[i].x > origin_x && self.cells[i].y < origin_y {
+                self.cells[i].y += cells(2);
+            } else if self.cells[i].x < origin_x && self.cells[i].y < origin_y {
+                self.cells[i].x += cells(2);
+            } else if self.cells[i].x < origin_x && self.cells[i].y > origin_y {
+                self.cells[i].y -= cells(2);
+            }
+
+            if self.cells[i].x != origin_x && self.cells[i].y != origin_y {
+                continue;
+            }
+
+            // For the cell not adjacent to the origin in an I-block,
+            // we want to scale the movement by 2.
+            let scale = (if self.cells[i].x == origin_x {
+                self.cells[i].y - origin_y
+            } else {
+                self.cells[i].x - origin_x
+            } / CELL_SIZE).abs() as u32;
+
+
+            if self.cells[i].x < origin_x {
+                self.cells[i].x += cells(scale);
+                self.cells[i].y -= cells(scale);
+            } else if self.cells[i].x > origin_x {
+                self.cells[i].x -= cells(scale);
+                self.cells[i].y += cells(scale);
+            } else if self.cells[i].y < origin_y {
+                self.cells[i].x += cells(scale);
+                self.cells[i].y += cells(scale);
+            } else if self.cells[i].y > origin_y {
+                self.cells[i].x -= cells(scale);
+                self.cells[i].y -= cells(scale);
+            }
+        }
+    }
+
     fn can_move_in_direction(
         &self, direction: Direction, placed_blocks: &Vec<Block>
     ) -> bool {
@@ -233,8 +278,8 @@ impl Block {
 
         Block {
             cells: [
-                Cell::new(x,            y,            color),
                 Cell::new(x + cells(1), y,            color),
+                Cell::new(x,            y,            color),
                 Cell::new(x,            y + cells(1), color),
                 Cell::new(x,            y + cells(2), color),
             ]
