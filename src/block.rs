@@ -9,7 +9,7 @@ use graphics::rectangle::Shape::Square;
 use graphics::types::Color;
 use rand::Rng;
 
-use direction::Direction;
+use ::Direction;
 
 const CELL_SIZE:   Scalar = 30.0;
 const CELL_BORDER: Scalar = CELL_SIZE / 10.0;

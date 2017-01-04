@@ -5,7 +5,6 @@ extern crate piston;
 extern crate rand;
 
 mod block;
-mod direction;
 
 use block::cells;
 
@@ -20,7 +19,7 @@ const BOARD_CELL_HEIGHT: u32 = 20;
 const BOARD_CELL_WIDTH:  u32 = 10;
 
 fn main() {
-    use direction::Direction::*;
+    use Direction::*;
 
     let opengl = OpenGL::V3_2;
     let height = cells(BOARD_CELL_HEIGHT) as u32;
@@ -103,6 +102,9 @@ fn main() {
     println!("You got {} points.", score.points);
 }
 
+#[derive(Clone, Copy)]
+pub enum Direction { Left, Right, Down }
+
 struct Score {
     points: usize,
     lines:  usize,
@@ -147,7 +149,7 @@ fn clear_filled_lines(
         if placed_cells[i].len() == BOARD_CELL_WIDTH as usize {
             for j in i..placed_cells.len() {
                 for cell in placed_cells[j].iter_mut() {
-                    cell.move_in_direction(direction::Direction::Down);
+                    cell.move_in_direction(Direction::Down);
                 }
             }
         }
