@@ -107,11 +107,9 @@ fn handle_update(dt:               &mut f64,
             active_block.move_in_direction(Down);
         } else {
             *score.counts.get_mut(&active_block.shape).unwrap() += 1;
-            for &cell in active_block.iter_cells() {
-                add_cell(cell, &mut placed_cells);
-            }
-            clear_filled_lines(&mut placed_cells, &mut score);
+            place_block(active_block, &mut placed_cells);
             *active_block = block::random_block(cells(1), cells(1));
+            clear_filled_lines(&mut placed_cells, &mut score);
         }
     }
 }
@@ -144,21 +142,29 @@ impl Score {
     }
 }
 
-fn add_cell(cell: block::Cell, placed_cells: &mut Vec<Vec<block::Cell>>) {
-    for row in placed_cells.iter_mut() {
-        if cell.y == row[0].y {
-            row.push(cell);
-            return;
+fn place_block(block:        &block::Block,
+               placed_cells: &mut Vec<Vec<block::Cell>>) {
+    for &cell in block.iter_cells() {
+        let mut found_matching_row = false;
+
+        for row in placed_cells.iter_mut() {
+            if cell.y == row[0].y {
+                row.push(cell);
+                found_matching_row = true;
+                break
+            }
+        }
+
+        if ! found_matching_row {
+            placed_cells.push(vec![cell])
         }
     }
-
-    placed_cells.push(vec![cell]);
-    placed_cells.sort_by(|a, b| b[0].y.partial_cmp(&a[0].y).unwrap());
 }
 
-fn clear_filled_lines(
-    placed_cells: &mut Vec<Vec<block::Cell>>, score: &mut Score
-) {
+fn clear_filled_lines(placed_cells: &mut Vec<Vec<block::Cell>>,
+                      score:        &mut Score) {
+    placed_cells.sort_by(|a, b| b[0].y.partial_cmp(&a[0].y).unwrap());
+
     for i in 0..placed_cells.len() {
         if placed_cells[i].len() == BOARD_CELL_WIDTH as usize {
             for j in i..placed_cells.len() {
