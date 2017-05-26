@@ -18,9 +18,9 @@ use piston::window::WindowSettings;
 const BOARD_CELL_HEIGHT: u32 = 20;
 const BOARD_CELL_WIDTH:  u32 = 10;
 
-fn main() {
-    use Direction::*;
+const BACKGROUND_COLOR: [f32; 4] = [0.0, 0.0, 0.0, 0.0];
 
+fn main() {
     let opengl = OpenGL::V3_2;
     let height = cells(BOARD_CELL_HEIGHT) as u32;
     let width  = cells(BOARD_CELL_WIDTH)  as u32;
@@ -31,7 +31,7 @@ fn main() {
         .build().unwrap();
     let mut gl = GlGraphics::new(opengl);
 
-    let mut block        = block::random_block(cells(1), cells(1));
+    let mut active_block = block::random_block(cells(1), cells(1));
     let mut score        = Score::new();
     let mut dt           = 0.0;
     let mut paused       = false;
@@ -40,66 +40,80 @@ fn main() {
     let mut events = window.events();
     while let Some(event) = events.next(&mut window) {
         if let Some(render_args) = event.render_args() {
-            gl.draw(render_args.viewport(), |c, gl| {
-                graphics::clear([0.0, 0.0, 0.0, 0.0], gl);
-                block.draw(c, gl);
-                for row in &placed_cells {
-                    for cell in row {
-                        cell.draw(c, gl);
-                    }
-                }
-            })
+            draw(&active_block, &placed_cells, &mut gl, render_args)
         }
 
         if let Some(update_args) = event.update_args() {
-            if paused {
-                continue;
-            }
+            if paused { continue }
 
-            dt += update_args.dt;
-            if dt >= 0.5 {
-                dt = 0.0;
-                if block.can_move_in_direction(Down, &placed_cells) {
-                    block.move_in_direction(Down);
-                } else {
-                    *score.counts.get_mut(&block.shape).unwrap() += 1;
-                    for &cell in block.iter_cells() {
-                        add_cell(cell, &mut placed_cells);
-                    }
-                    clear_filled_lines(&mut placed_cells, &mut score);
-                    block = block::random_block(cells(1), cells(1));
-                }
-            }
+            handle_update(&mut dt, &mut score,
+                          &mut active_block, &mut placed_cells,
+                          update_args)
         }
 
         if let Some(Button::Keyboard(key)) = event.press_args() {
-            if key == Key::Space {
-                paused = ! paused;
-            }
-
-            if paused {
-                continue;
-            }
-
-            match key {
-                Key::Left => {
-                    block.try_move_in_direction(Left, &placed_cells);
-                },
-                Key::Right => {
-                    block.try_move_in_direction(Right, &placed_cells);
-                },
-                Key::Down => {
-                    block.try_move_in_direction(Down, &placed_cells);
-                },
-                Key::Up => {
-                    block.try_rotate(&placed_cells);
-                },
-                _ => {}
-            }
+            handle_key(key, &mut paused, &mut active_block, &placed_cells)
         }
     }
 
     println!("You got {} points.", score.points);
+}
+
+fn draw(active_block: &block::Block,
+        placed_cells: &Vec<Vec<block::Cell>>,
+        gl:           &mut GlGraphics,
+        render_args:  piston::input::RenderArgs) {
+    gl.draw(render_args.viewport(), |c, g| {
+        graphics::clear(BACKGROUND_COLOR, g);
+        active_block.draw(c, g);
+        for row in placed_cells {
+            for cell in row {
+                cell.draw(c, g);
+            }
+        }
+    })
+}
+
+fn handle_key(key:          Key,
+              paused:       &mut bool,
+              active_block: &mut block::Block,
+              placed_cells: &Vec<Vec<block::Cell>>) {
+    use Direction::*;
+
+    if key == Key::Space { *paused = ! *paused }
+
+    if *paused { return }
+
+    match key {
+        Key::Left  => active_block.try_move_in_direction(Left,  &placed_cells),
+        Key::Right => active_block.try_move_in_direction(Right, &placed_cells),
+        Key::Down  => active_block.try_move_in_direction(Down,  &placed_cells),
+        Key::Up    => active_block.try_rotate(&placed_cells),
+        _ => {}
+    }
+}
+
+fn handle_update(dt:               &mut f64,
+                 mut score:        &mut Score,
+                 active_block:     &mut block::Block,
+                 mut placed_cells: &mut Vec<Vec<block::Cell>>,
+                 update_args:     piston::input::UpdateArgs) {
+    use Direction::Down;
+
+    *dt += update_args.dt;
+    if *dt >= 0.5 {
+        *dt = 0.0;
+        if active_block.can_move_in_direction(Down, &placed_cells) {
+            active_block.move_in_direction(Down);
+        } else {
+            *score.counts.get_mut(&active_block.shape).unwrap() += 1;
+            for &cell in active_block.iter_cells() {
+                add_cell(cell, &mut placed_cells);
+            }
+            clear_filled_lines(&mut placed_cells, &mut score);
+            *active_block = block::random_block(cells(1), cells(1));
+        }
+    }
 }
 
 #[derive(Clone, Copy)]
