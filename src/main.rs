@@ -46,9 +46,11 @@ fn main() {
         if let Some(update_args) = event.update_args() {
             if paused { continue }
 
-            handle_update(&mut dt, &mut score,
-                          &mut active_block, &mut placed_cells,
-                          update_args)
+            if handle_update(&mut dt, &mut score,
+                             &mut active_block, &mut placed_cells,
+                             update_args) {
+                break
+            }
         }
 
         if let Some(Button::Keyboard(key)) = event.press_args() {
@@ -93,11 +95,15 @@ fn handle_key(key:          Key,
     }
 }
 
-fn handle_update(dt:               &mut f64,
-                 mut score:        &mut Score,
-                 active_block:     &mut block::Block,
-                 mut placed_cells: &mut Vec<Vec<block::Cell>>,
-                 update_args:     piston::input::UpdateArgs) {
+// Update game state and return true if the game is over, otherwise return
+// false.
+fn handle_update(
+    dt:               &mut f64,
+    mut score:        &mut Score,
+    active_block:     &mut block::Block,
+    mut placed_cells: &mut Vec<Vec<block::Cell>>,
+    update_args:      piston::input::UpdateArgs
+) -> bool {
     use Direction::Down;
 
     *dt += update_args.dt;
@@ -108,10 +114,17 @@ fn handle_update(dt:               &mut f64,
         } else {
             *score.counts.get_mut(&active_block.shape).unwrap() += 1;
             place_block(active_block, &mut placed_cells);
-            *active_block = block::random_block(cells(1), cells(1));
+            *active_block = block::random_block(cells(1), cells(0));
+            if active_block.can_move_in_direction(Down, &placed_cells) {
+                active_block.move_in_direction(Down)
+            } else {
+                return true
+            }
             clear_filled_lines(&mut placed_cells, &mut score);
         }
     }
+
+    false
 }
 
 #[derive(Clone, Copy)]
